@@ -50,10 +50,7 @@ public abstract class Reader implements Closeable
 
 	abstract public Object read() throws ReaderException, IOException;
 
-	public Object nextRead() throws ReaderException, IOException
-	{
-		return null;
-	}
+	abstract public Object nextRead() throws ReaderException, IOException;
 
 	// =========================================================================
 

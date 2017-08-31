@@ -17,8 +17,8 @@ public class Interval
 	 * La classe garantie que a <= b
 	 */
 	// TODO: Généric
-	long					a;
-	long					b;
+	long	a;
+	long	b;
 
 	public Interval(long aa, long bb)
 	{
@@ -66,15 +66,12 @@ public class Interval
 	 *            <ul>
 	 *            <li>OPTION_NULL : les éléments restants sont ajoutés dans le
 	 *            dernier Interval</li>
-	 *            <li>OPTION_HOMOGENEOUS : les $reste premiers intervalles se
-	 *            voient ajouté 1 élément supplémentaire</li>
+	 *            <li>OPTION_HOMOGENEOUS : les $reste premiers intervalles se voient
+	 *            ajouté 1 élément supplémentaire</li>
 	 *            </ul>
-	 * @return $number Interval.
-	 *         Si $number > size() un tableau vide est
-	 *         retourné
+	 * @return $number Interval. Si $number > size() un tableau vide est retourné
 	 */
-	public ArrayList<Interval> cutByNumberOfIntervals(final int number,
-			final int option)
+	public ArrayList<Interval> cutByNumberOfIntervals(final int number, final int option)
 	{
 		ArrayList<Interval> ret = new ArrayList<>(number);
 
@@ -124,8 +121,10 @@ public class Interval
 	}
 
 	/**
+	 * Découpe avec une taille donnée des intervalles de sorties
 	 * 
-	 * @param size La taille d'un Interval
+	 * @param size
+	 *            La taille d'un Interval
 	 * @return Une liste d'Interval de taille $size
 	 */
 	public ArrayList<Interval> cutBySizeOfIntervals(long size)

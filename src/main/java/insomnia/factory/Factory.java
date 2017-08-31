@@ -1,5 +1,10 @@
 package insomnia.factory;
 
+/**
+ * Création d'objets
+ * @author zuri
+ *
+ */
 public abstract class Factory
 {
 	private Object	data;
