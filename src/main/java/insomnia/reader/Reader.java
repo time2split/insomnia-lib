@@ -17,8 +17,7 @@ import java.io.InputStream;
  */
 public abstract class Reader implements Closeable
 {
-	private InputStream	source;
-	private int			buffLen	= 4096;
+	private InputStream source;
 
 	public Reader()
 	{
@@ -37,7 +36,7 @@ public abstract class Reader implements Closeable
 
 	public Reader(File f) throws FileNotFoundException
 	{
-		setSource(new BufferedInputStream(new FileInputStream(f)));
+		setSource(f);
 	}
 
 	@Override
@@ -80,31 +79,5 @@ public abstract class Reader implements Closeable
 	public InputStream getSource()
 	{
 		return source;
-	}
-
-	// =========================================================================
-
-	/**
-	 * Lecture jusqu'à épuisement de la source
-	 * 
-	 * @return
-	 */
-	public String getContents()
-	{
-		String ret = "";
-		byte buff[] = new byte[buffLen];
-
-		try
-		{
-			while (-1 != (source.read(buff)))
-			{
-				ret += new String(buff);
-			}
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
-		return ret;
 	}
 }

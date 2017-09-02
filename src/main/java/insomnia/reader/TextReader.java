@@ -17,6 +17,7 @@ import java.util.regex.Pattern;
  * <li>LINE : lecture par ligne avec l'option $option_skipEmpty</li>
  * <li>WORD : lecture par mot suivant le pattern $wordPattern</li>
  * <li>BLOCK : lecture par block suivant la taille $blockSize</li>
+ * <li>ALL : lecture entière</li>
  * </ul>
  * 
  * @author zuri
@@ -26,7 +27,7 @@ public class TextReader extends Reader
 {
 	public enum Mode
 	{
-		LINE, WORD, BLOCK
+		LINE, WORD, BLOCK, ALL
 	}
 
 	Mode	mode				= Mode.LINE;
@@ -51,7 +52,7 @@ public class TextReader extends Reader
 
 	public TextReader(File f) throws FileNotFoundException
 	{
-		super(new BufferedInputStream(new FileInputStream(f)));
+		super(f);
 	}
 
 	/**
@@ -101,6 +102,7 @@ public class TextReader extends Reader
 			break;
 
 		case BLOCK:
+		{
 			byte tmp[] = new byte[blockSize];
 			d = source.read(tmp);
 
@@ -108,6 +110,19 @@ public class TextReader extends Reader
 				return null;
 
 			return new String(tmp);
+		}
+
+		case ALL:
+		{
+			String tmp;
+			setModeBlock();
+
+			while ((tmp = nextRead()) != null)
+			{
+				buff += tmp;
+			}
+			setModeAll();
+		}
 		}
 
 		if (!buff.isEmpty())
@@ -165,5 +180,10 @@ public class TextReader extends Reader
 	public void setModeLine()
 	{
 		mode = Mode.LINE;
+	}
+
+	public void setModeAll()
+	{
+		mode = Mode.ALL;
 	}
 }
