@@ -1,6 +1,7 @@
 package insomnia.numeric;
 
 import java.util.ArrayList;
+import java.util.stream.LongStream;
 
 /**
  * Intervalle numérique
@@ -17,8 +18,8 @@ public class Interval
 	 * La classe garantie que a <= b
 	 */
 	// TODO: Généric
-	long	a;
-	long	b;
+	long					a;
+	long					b;
 
 	public Interval(long aa, long bb)
 	{
@@ -66,10 +67,11 @@ public class Interval
 	 *            <ul>
 	 *            <li>OPTION_NULL : les éléments restants sont ajoutés dans le
 	 *            dernier Interval</li>
-	 *            <li>OPTION_HOMOGENEOUS : les $reste premiers intervalles se voient
-	 *            ajouté 1 élément supplémentaire</li>
+	 *            <li>OPTION_HOMOGENEOUS : les $reste premiers intervalles se
+	 *            voient ajouté 1 élément supplémentaire</li>
 	 *            </ul>
-	 * @return $number Interval. Si $number > size() un tableau vide est retourné
+	 * @return $number Interval. Si $number > size() un tableau vide est
+	 *         retourné
 	 */
 	public ArrayList<Interval> cutByNumberOfIntervals(final int number, final int option)
 	{
@@ -152,6 +154,11 @@ public class Interval
 			ret.add(new Interval(s, end));
 		}
 		return ret;
+	}
+
+	public long[] toArray()
+	{
+		return LongStream.rangeClosed(a, b).toArray();
 	}
 
 	@Override
