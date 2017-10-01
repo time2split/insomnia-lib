@@ -1,24 +1,25 @@
 package insomnia.json;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 public class ElementObject extends Element
 {
-	private HashMap<String, Element>	object;
+	private LinkedHashMap<String, Element>	object;
 
 	public ElementObject()
 	{
-		this.object = new HashMap<String, Element>();
+		this.object = new LinkedHashMap<String, Element>();
 	}
 
-	public ElementObject(HashMap<String, Element> object)
+	public ElementObject(LinkedHashMap<String, Element> object)
 	{
 		this.object = object;
 	}
 
 	public ElementObject(ElementObject e)
 	{
-		this.object = new HashMap<String, Element>(e.object.size());
+		this.object = new LinkedHashMap<String, Element>(e.object.size());
 
 		for ( String key : e.object.keySet() )
 			this.object.put(new String(key), e.object.get(key).clone());
