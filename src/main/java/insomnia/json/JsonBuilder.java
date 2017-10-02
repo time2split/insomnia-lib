@@ -35,5 +35,5 @@ abstract public class JsonBuilder extends BuilderData
 	abstract public void build() throws JsonBuilderException;
 
 	@Override
-	abstract public Object newBuild() throws JsonBuilderException;
+	abstract public Json newBuild() throws JsonBuilderException;
 }

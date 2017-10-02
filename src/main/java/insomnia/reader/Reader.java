@@ -18,11 +18,17 @@ import java.io.InputStream;
 public abstract class Reader implements Closeable
 {
 	private InputStream source;
+	// private java.io.Reader rsource;
 
 	public Reader()
 	{
 		setSource(System.in);
 	}
+
+	// public Reader(java.io.Reader r)
+	// {
+	// setSource(r);
+	// }
 
 	public Reader(InputStream s)
 	{
@@ -47,6 +53,14 @@ public abstract class Reader implements Closeable
 
 	// =========================================================================
 
+	// public int readInt() throws IOException
+	// {
+	// if (rsource != null)
+	// return rsource.read();
+	//
+	// return source.read();
+	// }
+
 	abstract public Object read() throws ReaderException, IOException;
 
 	abstract public Object nextRead() throws ReaderException, IOException;
@@ -61,8 +75,15 @@ public abstract class Reader implements Closeable
 
 	// =========================================================================
 
+	// public void setSource(java.io.Reader reader)
+	// {
+	// rsource = reader;
+	// source = null;
+	// }
+
 	public void setSource(InputStream stream)
 	{
+//		rsource = null;
 		source = stream;
 	}
 
