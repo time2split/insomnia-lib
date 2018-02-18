@@ -1,6 +1,6 @@
 package insomnia.json;
 
-import insomnia.builder.BuilderData;
+import insomnia.builder.Builder;
 
 /**
  * Permet de construire un document Json
@@ -8,7 +8,7 @@ import insomnia.builder.BuilderData;
  * @author zuri
  * 
  */
-abstract public class JsonBuilder extends BuilderData
+abstract public class JsonBuilder extends Builder
 {
 
 	public JsonBuilder()
