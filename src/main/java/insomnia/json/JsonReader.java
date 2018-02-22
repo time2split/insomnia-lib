@@ -26,7 +26,7 @@ public class JsonReader extends Reader
 	 * <li>false : permet de spécifier des clés objet sans parenthèses</li>
 	 * </ul>
 	 */
-	private JsonOptions	options	= new JsonOptions();
+	private JsonOptions options = new JsonOptions();
 
 	private enum Token
 	{
@@ -70,6 +70,16 @@ public class JsonReader extends Reader
 
 	// =========================================================================
 
+	public static boolean checkNumber(StringBuffer buff)
+	{
+		return checkNumber(buff.toString());
+	}
+
+	public static boolean checkLiteral(StringBuffer buff)
+	{
+		return checkLiteral(buff.toString());
+	}
+
 	public static boolean checkNumber(String s)
 	{
 		return s.matches("^-?(([1-9]\\d*)|0)(\\.\\d+)?([eE][+-]\\d+)?$");
@@ -88,11 +98,27 @@ public class JsonReader extends Reader
 		Token	token;
 		String	data;
 
+		LexerVal(Token t)
+		{
+			token = t;
+		}
+
 		LexerVal(Token t, String d)
 		{
-			this.token = t;
-			this.data = d;
+			token = t;
+			data = d;
 		}
+
+		LexerVal(Token t, StringBuffer d)
+		{
+			this(t, d.toString());
+		}
+	}
+
+	private class LexerInfos
+	{
+		private boolean	readLastChar	= false;
+		private int		lastiChar		= 0;
 	}
 
 	private enum LexerState
@@ -102,25 +128,37 @@ public class JsonReader extends Reader
 
 	// TODO: faire une classe Lexer
 	// TODO: enregistrement ligne/colonne pour erreurs précises
-	private LexerVal nextToken(InputStream stream) throws ReaderException,
-			IOException
+	private LexerVal nextToken(InputStream stream, LexerInfos infos)
+			throws ReaderException, IOException
 	{
 
-		if (!stream.markSupported())
-			throw new ReaderException("Le flux ne supporte pas le marquage");
+		// if (!stream.markSupported())
+		// throw new ReaderException("Le flux ne supporte pas le marquage");
 
 		LexerState state = LexerState.START;
-		String buffer = "";
+		StringBuffer buffer = new StringBuffer(512);
 		final boolean option_strict = options.getStrict();
+
+		int d;
+		char c;
 
 		while (true)
 		{
-			int d = stream.read();
-			char c = (char) d;
+			if (infos.readLastChar)
+			{
+				infos.readLastChar = false;
+				d = infos.lastiChar;
+			}
+			else
+			{
+				d = stream.read();
+			}
+			infos.lastiChar = d;
+			c = (char) d;
 
 			if (Config.DEBUG_LEXER)
-				System.out.println("l " + state + " c:" + c + " (" + d + ") buff: "
-						+ buffer);
+				System.out.println(
+					"l " + state + " c:" + c + " (" + d + ") buff: " + buffer);
 
 			switch (state)
 			{
@@ -147,41 +185,48 @@ public class JsonReader extends Reader
 					return new LexerVal(Token.COMA, ",");
 
 				if (c == '"')
+				{
 					state = LexerState.STRING;
+				}
 				else if (!option_strict && JsonOptions.checkNonStrict(c))
 				{
-					stream.mark(1);
-					buffer += c;
+					// stream.mark(1);
+					buffer.append(c);
 					state = LexerState.LITERALNOSTRICT;
 				}
 				else if (Character.isLetter(c))
 				{
-					stream.mark(1);
-					buffer += c;
+					// stream.mark(1);
+					buffer.append(c);
 					state = LexerState.LITERAL;
 				}
 				else if (Character.isDigit(c) || c == '-')
 				{
-					stream.mark(1);
-					buffer += c;
+					// stream.mark(1);
+					buffer.append(c);
 					state = LexerState.NUMBER;
 				}
 				else
-					throw new ReaderException("Mauvais caractère lexer '" + d + " " + c + "'");
+				{
+					throw new ReaderException(
+						"Mauvais caractère lexer '" + d + " " + c + "'");
+				}
 				break;
 
 			case LITERALNOSTRICT:
 
 				if (JsonOptions.checkNonStrict(c))
 				{
-					stream.mark(1);
-					buffer += c;
+					// stream.mark(1);
+					buffer.append(c);
 				}
 				else
 				{
 					if (d != -1)
-						stream.reset();
-
+					{
+						// stream.reset();
+						infos.readLastChar = true;
+					}
 					return new LexerVal(Token.LITERALORSTRING, buffer);
 				}
 				break;
@@ -191,18 +236,22 @@ public class JsonReader extends Reader
 
 				if (Character.isLetterOrDigit(c))
 				{
-					stream.mark(1);
-					buffer += c;
+					// stream.mark(1);
+					buffer.append(c);
 				}
 				else
 				{
 					if (d != -1)
-						stream.reset();
+					{
+						// stream.reset();
+						infos.readLastChar = true;
+					}
 
 					if (checkLiteral(buffer))
 						return new LexerVal(Token.LITERAL, buffer);
 
-					throw new ReaderException("Littéral " + buffer + " inconnu");
+					throw new ReaderException(
+						"Littéral " + buffer + " inconnu");
 				}
 				break;
 
@@ -212,12 +261,13 @@ public class JsonReader extends Reader
 				if (Character.isDigit(c) || c == 'e' || c == 'E' || c == '.'
 						|| c == '+' || c == '-')
 				{
-					stream.mark(1);
-					buffer += c;
+					// stream.mark(1);
+					buffer.append(c);
 				}
 				else
 				{
-					stream.reset();
+					// stream.reset();
+					infos.readLastChar = true;
 					return new LexerVal(Token.NUMBER, buffer);
 				}
 				break;
@@ -228,7 +278,7 @@ public class JsonReader extends Reader
 				if (c == '"')
 					return new LexerVal(Token.STRING, buffer);
 
-				buffer += c;
+				buffer.append(c);
 
 				if (c == '\\')
 					state = LexerState.CHAR_ESCAPE;
@@ -237,7 +287,7 @@ public class JsonReader extends Reader
 
 			// Echappement
 			case CHAR_ESCAPE:
-				buffer += c;
+				buffer.append(c);
 				state = LexerState.STRING;
 				break;
 
@@ -252,7 +302,7 @@ public class JsonReader extends Reader
 					throw new ReaderException("Fin rencontrée dans le lexer");
 			}
 		}
-		return new LexerVal(Token.END, null);
+		return new LexerVal(Token.END);
 	}
 
 	// =========================================================================
@@ -299,11 +349,13 @@ public class JsonReader extends Reader
 
 		elems.push(new ElementRoot());
 
+		LexerInfos lexerInfos = new LexerInfos();
+
 		while (true)
 		{
 			// On saute le lexer
 			if (!skipLexer)
-				lv = nextToken(this.getSource());
+				lv = nextToken(this.getSource(), lexerInfos);
 
 			// Le non saut est rétabli
 			if (skipLexer)
@@ -357,15 +409,15 @@ public class JsonReader extends Reader
 						else if (checkNumber(data))
 							lv.token = Token.NUMBER;
 						else
-							throw new ReaderException("Token " + data
-									+ " non reconnu");
+							throw new ReaderException(
+								"Token " + data + " non reconnu");
 					}
 				}
 				else if (token == Token.NUMBER)
 				{
 					if (!checkNumber(data))
-						throw new ReaderException("Nombre non reconnu : "
-								+ data);
+						throw new ReaderException(
+							"Nombre non reconnu : " + data);
 
 					current = new ElementNumber(data);
 					states.push(ReadState.STORE_ELEMENT);
@@ -392,7 +444,8 @@ public class JsonReader extends Reader
 				else if (token == Token.COMA || token == Token.COLON
 						|| token == Token.ARR_CLOS)
 				{
-					throw new ReaderException("Token " + token + " non attendu");
+					throw new ReaderException(
+						"Token " + token + " non attendu");
 				}
 				else
 				{
@@ -426,7 +479,8 @@ public class JsonReader extends Reader
 				else if (p instanceof ElementObject)
 				{
 					if (!(current instanceof ElementString))
-						throw new ReaderException("Les clés doivent être de type string");
+						throw new ReaderException(
+							"Les clés doivent être de type string");
 
 					states.push(ReadState.COLON);
 
@@ -445,7 +499,8 @@ public class JsonReader extends Reader
 						states.push(ReadState.COMMA_OR_OBJCLOS);
 				}
 				else
-					throw new ReaderException("Objet collection attendu dans la pile");
+					throw new ReaderException(
+						"Objet collection attendu dans la pile");
 			}
 				break;
 
@@ -467,14 +522,14 @@ public class JsonReader extends Reader
 
 				if (token != Token.ARR_CLOS && token != Token.COMA)
 					throw new ReaderException("Token ',' ou ']' attendue");
-				{
-					skipLexer = true;
+			{
+				skipLexer = true;
 
-					if (token == Token.COMA)
-						states.push(ReadState.START);
+				if (token == Token.COMA)
+					states.push(ReadState.START);
 
-					states.push(ReadState.ARRAY_ADD);
-				}
+				states.push(ReadState.ARRAY_ADD);
+			}
 				break;
 
 			// Ajout dans Object
@@ -491,7 +546,8 @@ public class JsonReader extends Reader
 				if (!(p instanceof ElementObject))
 					throw new ReaderException("Element non Object");
 
-				((ElementObject) p).getObject().put(((ElementString) key).getString(), current);
+				((ElementObject) p).getObject()
+						.put(((ElementString) key).getString(), current);
 			}
 				break;
 
@@ -509,14 +565,14 @@ public class JsonReader extends Reader
 
 				if (token != Token.OBJ_CLOS && token != Token.COMA)
 					throw new ReaderException("Token ',' ou '}' attendus");
-				{
-					skipLexer = true;
+			{
+				skipLexer = true;
 
-					if (token == Token.COMA)
-						states.push(ReadState.START);
+				if (token == Token.COMA)
+					states.push(ReadState.START);
 
-					states.push(ReadState.OBJECT_ADD);
-				}
+				states.push(ReadState.OBJECT_ADD);
+			}
 				break;
 
 			// Attente END
@@ -524,18 +580,18 @@ public class JsonReader extends Reader
 
 				if (token != Token.END)
 					throw new ReaderException("Token END attendue");
-				{
-					Element p = null;
-					current = elems.pop();
+			{
+				Element p = null;
+				current = elems.pop();
 
-					if (!elems.empty())
-						p = elems.peek();
+				if (!elems.empty())
+					p = elems.peek();
 
-					if (!(p instanceof ElementRoot))
-						throw new ReaderException("Element non Racine");
+				if (!(p instanceof ElementRoot))
+					throw new ReaderException("Element non Racine");
 
-					((ElementRoot) p).e = current;
-				}
+				((ElementRoot) p).e = current;
+			}
 				break;
 			}
 
@@ -548,8 +604,8 @@ public class JsonReader extends Reader
 					throw new ReaderException("Aucun élément Json à retourner");
 
 				if (elems.size() > 1)
-					throw new ReaderException("La pile contient "
-							+ elems.size() + " éléments ; Retour impossible");
+					throw new ReaderException("La pile contient " + elems.size()
+							+ " éléments ; Retour impossible");
 
 				return (ElementRoot) elems.pop();
 			}
@@ -557,7 +613,8 @@ public class JsonReader extends Reader
 	}
 
 	@Override
-	public Json nextRead() throws ReaderException, IOException {
+	public Json nextRead() throws ReaderException, IOException
+	{
 		return read();
 	}
 }
