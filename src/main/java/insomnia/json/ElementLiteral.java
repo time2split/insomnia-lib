@@ -11,6 +11,8 @@ public class ElementLiteral extends Element
 
 	public ElementLiteral(String val)
 	{
+		val = val.toLowerCase();
+		
 		if (val.equals("true"))
 			setLiteral(Literal.TRUE);
 		else if (val.equals("false"))
