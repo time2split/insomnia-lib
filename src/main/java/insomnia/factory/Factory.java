@@ -2,12 +2,13 @@ package insomnia.factory;
 
 /**
  * Création d'objets
+ * 
  * @author zuri
  *
  */
 public abstract class Factory
 {
-	private Object	data;
+	private Object data;
 
 	public Factory()
 	{
@@ -30,4 +31,15 @@ public abstract class Factory
 	}
 
 	abstract public Object create();
+
+	public Object create_alert() throws FactoryException
+	{
+		Object ret = create();
+
+		if (ret == null)
+			throw new FactoryException(this.getClass().getName()
+					+ " cannot create an object");
+
+		return ret;
+	}
 }
