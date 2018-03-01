@@ -87,6 +87,7 @@ public class JsonWriter extends Writer
 			tabs = "";
 			tabs1 = "";
 		}
+		String lasteol = level == 0 ? "" : eol;
 
 		OutputStream dest = getDestination();
 
@@ -109,11 +110,11 @@ public class JsonWriter extends Writer
 				else
 					doonce = true;
 
-				dest.write(('"' + k + "\" : ").getBytes());
+				dest.write(('"' + k + "\":").getBytes());
 				s_write(c, level + 1);
 			}
 			dest.write(tabs.getBytes());
-			dest.write(('}' + eol).getBytes());
+			dest.write(('}' + lasteol).getBytes());
 		}
 		else if (e instanceof ElementArray)
 		{
@@ -136,16 +137,11 @@ public class JsonWriter extends Writer
 				s_write(c, level + 1);
 			}
 			dest.write(tabs.getBytes());
-			dest.write((']' + eol).getBytes());
+			dest.write((']' + lasteol).getBytes());
 		}
-		// else if (e instanceof ElementString)
-		// {
-		// dest.write(("\"" + ((ElementString) e).getString() + "\"" +
-		// eol).getBytes());
-		// }
 		else
 		{
-			dest.write((e + eol).getBytes());
+			dest.write((e + lasteol).getBytes());
 		}
 	}
 }
