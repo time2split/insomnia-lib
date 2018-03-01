@@ -24,6 +24,10 @@ public class ElementObject extends Element
 		for ( String key : e.object.keySet() )
 			this.object.put(new String(key), e.object.get(key).clone());
 	}
+	
+	public void add(String label, Element e) {
+		object.put(label, e);
+	}
 
 	@Override
 	public Element followPath(String[] keys, int offset)

@@ -29,16 +29,51 @@ public abstract class Element implements Cloneable
 		return false;
 	}
 
+	/**
+	 * Ajoute l'élément e dans l'élément this
+	 * 
+	 * @param e
+	 * @return null si impossible, e si ok
+	 */
+	public Element add(Element e, String l)
+	{
+		if (isArray())
+		{
+			((ElementArray) this).add(e);
+			return e;
+		}
+		else if (isObject())
+		{
+			((ElementObject) this).add(l,e);
+			return e;
+		}
+		return null;
+	}
+
+	/**
+	 * Version de add avec retour d'exception
+	 * 
+	 * @see Element#add(Element)
+	 * @param e
+	 * @throws UnsupportedOperationException
+	 */
+	public void add_alert(Element e, String l) throws UnsupportedOperationException
+	{
+		if (null == add(e,l))
+			throw new UnsupportedOperationException(
+				"Cannot add an element on a " + this.getClass().getName());
+	}
+
 	@Override
 	public abstract Element clone();
 
 	@Override
 	public boolean equals(Object o)
 	{
-		if ( ! ( o instanceof Element ) )
+		if (!(o instanceof Element))
 			return false;
 
-		return ( (Element) o ).getValue().equals(getValue());
+		return ((Element) o).getValue().equals(getValue());
 	}
 
 	@Override
@@ -61,10 +96,10 @@ public abstract class Element implements Cloneable
 	public Element followPath(String[] keys, int offset)
 	{
 		// Comportement par défaut des objets non traversables
-		if ( offset == keys.length )
+		if (offset == keys.length)
 			return this;
 
-		if ( keys[0].equals("") )
+		if (keys[0].equals(""))
 			return this.followPath(keys, offset++);
 
 		return null;

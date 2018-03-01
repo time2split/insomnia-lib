@@ -5,7 +5,7 @@ import java.util.regex.Pattern;
 
 public class ElementArray extends Element
 {
-	private ArrayList<Element>	array;
+	private ArrayList<Element> array;
 
 	public ElementArray()
 	{
@@ -16,7 +16,7 @@ public class ElementArray extends Element
 	{
 		this.array = new ArrayList<Element>(e.array.size());
 
-		for ( Element el : e.array )
+		for (Element el : e.array)
 			this.array.add(el.clone());
 	}
 
@@ -25,29 +25,34 @@ public class ElementArray extends Element
 		this.array = array;
 	}
 
+	public void add(Element e)
+	{
+		array.add(e);
+	}
+
 	@Override
 	public Element followPath(String[] keys, int offset)
 	{
-		if ( offset < 0 || offset > keys.length )
+		if (offset < 0 || offset > keys.length)
 			return null;
 
 		// System.out.println("ARR " + this.array + " " + offset);
 
-		if ( offset == keys.length )
+		if (offset == keys.length)
 			return this;
 
 		String key = keys[offset];
 
-		if ( key.equals("") )
+		if (key.equals(""))
 			return this.followPath(keys, offset++);
 
 		// Code spécial pour les tableaux (ex : $0, $1, ...)
-		if ( key.charAt(0) != '$' )
+		if (key.charAt(0) != '$')
 			return null;
 
 		String val = key.substring(1);
 
-		if ( !Pattern.compile("\\d+").matcher(val).matches() )
+		if (!Pattern.compile("\\d+").matcher(val).matches())
 			return null;
 
 		int i = Integer.valueOf(val);
@@ -55,7 +60,8 @@ public class ElementArray extends Element
 		try
 		{
 			return array.get(i).followPath(keys, offset + 1);
-		} catch (IndexOutOfBoundsException e)
+		}
+		catch (IndexOutOfBoundsException e)
 		{
 			return null;
 		}
@@ -93,10 +99,10 @@ public class ElementArray extends Element
 	public boolean equals(Object o)
 	{
 
-		if ( ! ( o instanceof ElementArray ) )
+		if (!(o instanceof ElementArray))
 			return false;
 
-		return array.equals( ( (ElementArray) o ).array);
+		return array.equals(((ElementArray) o).array);
 	}
 
 	@Override
@@ -104,7 +110,7 @@ public class ElementArray extends Element
 	{
 		int i = 0;
 
-		for ( Element e : array )
+		for (Element e : array)
 			i += e.hashCode();
 
 		return i;
